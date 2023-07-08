@@ -77,14 +77,14 @@ class SubsetSequentialBatchSampler(Sampler):
 
 # load configuration
 cfg = omegaconf.OmegaConf.load("conf/config_FCN.yaml")
-model_path = to_absolute_path("fcn_era5.pth")
+model_path = to_absolute_path("outputs/fcn_era5/FCN.0.pth")
 
 # get device
 device = DistributedManager().device
 
 # load test data
 test_dataset = ERA5HDF5GridDataset(
-    cfg.custom.test_data_path,  # Test data location e.g. /era5/20var/test
+    cfg.custom.test_dataset.data_path,  # Test data location e.g. /era5/20var/test
     chans=list(range(cfg.custom.n_channels)),
     tstep=cfg.custom.tstep,
     n_tsteps=1,  # set to one for inference
@@ -93,7 +93,8 @@ test_dataset = ERA5HDF5GridDataset(
 
 m = Metrics(
     test_dataset.img_shape,
-    clim_mean_path="/era5/stats/time_means.npy",  # Path to climate mean
+    #clim_mean_path="/era5/stats/time_means.npy",  # Path to climate mean
+    clim_mean_path="data/pdsi_Belarus_with_neighb_h5/stats/global_means.npy",
     device=device,
 )
 

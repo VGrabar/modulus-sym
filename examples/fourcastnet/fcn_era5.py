@@ -24,6 +24,7 @@ warn(
 
 import logging
 
+import modulus
 import modulus.sym
 
 from modulus.sym.hydra.config import ModulusConfig
@@ -53,6 +54,7 @@ def run(cfg: ModulusConfig) -> None:
         chans=channels,
         tstep=cfg.custom.tstep,
         n_tsteps=cfg.custom.n_tsteps,
+        thresholds=cfg.custom.thresholds,
         patch_size=cfg.arch.afno.patch_size,
         batch_size=cfg.batch_size.grid,
         num_workers=cfg.custom.num_workers.grid,
@@ -65,8 +67,9 @@ def run(cfg: ModulusConfig) -> None:
         chans=channels,
         tstep=cfg.custom.tstep,
         n_tsteps=cfg.custom.n_tsteps,
+        thresholds=cfg.custom.thresholds,
         patch_size=cfg.arch.afno.patch_size,
-        n_samples_per_year=20,
+        n_samples_per_year=None,
         batch_size=cfg.batch_size.validation,
         num_workers=cfg.custom.num_workers.validation,
     )

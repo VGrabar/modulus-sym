@@ -15,6 +15,7 @@
 import h5py
 import logging
 import numpy as np
+import torch
 
 from typing import List
 from pathlib import Path
@@ -56,6 +57,7 @@ class ERA5HDF5GridBaseDataset:
         chans: List[int],
         tstep: int = 1,
         n_tsteps: int = 1,
+        thresholds: List[int] = [-2],
         patch_size: int = None,
         n_samples_per_year: int = None,
         stats_dir: str = None,
@@ -68,7 +70,9 @@ class ERA5HDF5GridBaseDataset:
         self.n_tsteps = n_tsteps
         self.patch_size = patch_size
         self.n_samples_per_year = n_samples_per_year
-
+        self.thresholds = thresholds
+        self.num_class = len(thresholds) + 1
+        
         if stats_dir is None:
             self.stats_dir = self.data_dir.parent / "stats"
 
@@ -96,6 +100,7 @@ class ERA5HDF5GridBaseDataset:
             logging.info(f"Number of channels available: {f['fields'].shape[1]}")
 
         # get example indices to use
+        print(self.n_samples_per_year)
         if self.n_samples_per_year is None:
             self.n_samples_per_year = self.n_samples_per_year_all
             self.samples = [
@@ -182,7 +187,7 @@ class ERA5HDF5GridDataset(ERA5HDF5GridBaseDataset, Dataset):
         invar = {self.invar_keys[0]: xs[0]}
 
         assert len(self.outvar_keys) == len(xs) - 1
-        outvar = {self.outvar_keys[i]: x for i, x in enumerate(xs[1:])}
+        outvar = {self.outvar_keys[i]: len(self.thresholds) - torch.bucketize(x, self.thresholds) for i, x in enumerate(xs[1:])}
 
         invar = Dataset._to_tensor_dict(invar)
         outvar = Dataset._to_tensor_dict(outvar)
