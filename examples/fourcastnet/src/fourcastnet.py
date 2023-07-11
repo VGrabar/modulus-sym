@@ -90,6 +90,13 @@ class FourcastNetArch(Arch):
         )
         # final classifier layer
         self.num_classes = num_classes
+        self.conv = torch.nn.Conv2d(
+            in_channels=1,
+            out_channels=self.num_classes,
+            kernel_size=3,
+            stride=1,
+            padding=1,
+        )
 
     def forward(self, in_vars: Dict[str, Tensor]) -> Dict[str, Tensor]:
         # prepare input tensor
@@ -105,9 +112,10 @@ class FourcastNetArch(Arch):
         ys = []
         for t in range(self.n_tsteps):
             x = self._impl(x)
-            print(x.shape)
+            x = self.conv(x)
             ys.append(x)
         y = torch.cat(ys, dim=1)
+        print(y.shape)
 
         # prepare output dict
         return self.prepare_output(
