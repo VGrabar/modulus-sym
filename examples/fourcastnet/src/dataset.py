@@ -70,7 +70,7 @@ class ERA5HDF5GridBaseDataset:
         self.n_tsteps = n_tsteps
         self.patch_size = patch_size
         self.n_samples_per_year = n_samples_per_year
-        self.thresholds = thresholds
+        self.thresholds = np.array(thresholds)
         self.num_class = len(thresholds) + 1
         
         if stats_dir is None:
@@ -100,7 +100,6 @@ class ERA5HDF5GridBaseDataset:
             logging.info(f"Number of channels available: {f['fields'].shape[1]}")
 
         # get example indices to use
-        print(self.n_samples_per_year)
         if self.n_samples_per_year is None:
             self.n_samples_per_year = self.n_samples_per_year_all
             self.samples = [
@@ -187,7 +186,8 @@ class ERA5HDF5GridDataset(ERA5HDF5GridBaseDataset, Dataset):
         invar = {self.invar_keys[0]: xs[0]}
 
         assert len(self.outvar_keys) == len(xs) - 1
-        outvar = {self.outvar_keys[i]: len(self.thresholds) - torch.bucketize(x, self.thresholds) for i, x in enumerate(xs[1:])}
+        #outvar = {self.outvar_keys[i]: len(self.thresholds) - torch.bucketize(x, self.thresholds) for i, x in enumerate(xs[1:])}
+        outvar = {self.outvar_keys[i]: len(self.thresholds) - np.digitize(x, self.thresholds) for i, x in enumerate(xs[1:])}
 
         invar = Dataset._to_tensor_dict(invar)
         outvar = Dataset._to_tensor_dict(outvar)
