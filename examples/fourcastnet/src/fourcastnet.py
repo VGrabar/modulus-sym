@@ -36,6 +36,7 @@ class FourcastNetArch(Arch):
         embed_dim: int = 256,
         depth: int = 4,
         num_blocks: int = 4,
+        num_classes: int = 2,
     ) -> None:
         """Fourcastnet model. This is a simple wrapper for Modulus' AFNO model.
         The only difference is that FourcastNet needs multi-step training. This class
@@ -87,6 +88,8 @@ class FourcastNetArch(Arch):
             depth=depth,
             num_blocks=num_blocks,
         )
+        # final classifier layer
+        self.num_classes = num_classes
 
     def forward(self, in_vars: Dict[str, Tensor]) -> Dict[str, Tensor]:
         # prepare input tensor
@@ -102,6 +105,7 @@ class FourcastNetArch(Arch):
         ys = []
         for t in range(self.n_tsteps):
             x = self._impl(x)
+            print(x.shape)
             ys.append(x)
         y = torch.cat(ys, dim=1)
 

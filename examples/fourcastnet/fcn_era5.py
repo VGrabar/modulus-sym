@@ -39,7 +39,7 @@ from modulus.sym.utils.io import GridValidatorPlotter
 from src.dali_dataset import ERA5HDF5GridDaliIterableDataset
 from src.dataset import ERA5HDF5GridDataset
 from src.fourcastnet import FourcastNetArch
-from src.loss import LpLoss
+from src.loss import LpLoss, CELoss
 
 logger = logging.getLogger(__name__)
 
@@ -90,6 +90,7 @@ def run(cfg: ModulusConfig) -> None:
         embed_dim=cfg.arch.afno.embed_dim,
         depth=cfg.arch.afno.depth,
         num_blocks=cfg.arch.afno.num_blocks,
+        num_classes=len(cfg.custom.thresholds)+1,
     )
     nodes = [model.make_node(name="FCN")]
 
@@ -101,7 +102,7 @@ def run(cfg: ModulusConfig) -> None:
         nodes=nodes,
         dataset=train_dataset,
         batch_size=cfg.batch_size.grid,
-        loss=LpLoss(),
+        loss=CELoss(),
         num_workers=cfg.custom.num_workers.grid,
     )
     domain.add_constraint(supervised, "supervised")
