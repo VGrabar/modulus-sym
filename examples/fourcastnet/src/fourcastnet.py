@@ -66,7 +66,11 @@ class FourcastNetArch(Arch):
             output_keys=output_keys,
             detach_keys=detach_keys,
         )
-
+        # kostyl'
+        self.num_classes = num_classes
+        self.output_key_dict = {key: value*self.num_classes for key, value in self.output_key_dict.items()} 
+        print(self.input_key_dict)
+        print(self.output_key_dict)
         # get number of timesteps steps to unroll
         assert (
             len(self.input_keys) == 1
@@ -89,7 +93,6 @@ class FourcastNetArch(Arch):
             num_blocks=num_blocks,
         )
         # final classifier layer
-        self.num_classes = num_classes
         self.conv = torch.nn.Conv2d(
             in_channels=1,
             out_channels=self.num_classes,
@@ -115,7 +118,6 @@ class FourcastNetArch(Arch):
             x = self.conv(x)
             ys.append(x)
         y = torch.cat(ys, dim=1)
-        print(y.shape)
 
         # prepare output dict
         return self.prepare_output(

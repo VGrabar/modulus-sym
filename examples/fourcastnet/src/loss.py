@@ -101,7 +101,6 @@ class CELoss(torch.nn.Module):
     ) -> Dict[str, float]:
         losses = {}
         for key, value in pred_outvar.items():
-            print("pred ", pred_outvar[key].shape)
-            print("true ", true_outvar[key].shape)
-            losses[key] = self.loss(pred_outvar[key], true_outvar[key])
+            true_outvar_changed = torch.squeeze(true_outvar[key], dim=1).long()
+            losses[key] = self.loss(pred_outvar[key], true_outvar_changed)
         return losses
