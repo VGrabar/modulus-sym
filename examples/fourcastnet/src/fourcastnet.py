@@ -69,8 +69,6 @@ class FourcastNetArch(Arch):
         # kostyl'
         self.num_classes = num_classes
         self.output_key_dict = {key: value*self.num_classes for key, value in self.output_key_dict.items()} 
-        print(self.input_key_dict)
-        print(self.output_key_dict)
         # get number of timesteps steps to unroll
         assert (
             len(self.input_keys) == 1

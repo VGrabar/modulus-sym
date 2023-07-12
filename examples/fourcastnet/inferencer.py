@@ -98,7 +98,6 @@ m = Metrics(
     clim_mean_path="data/pdsi_Belarus_with_neighb_h5/stats/global_means.npy",
     device=device,
 )
-print(test_dataset.img_shape)
 # define input/output keys
 input_keys = [Key(k, size=test_dataset.nchans) for k in test_dataset.invar_keys]
 output_keys = [Key(k, size=test_dataset.nchans) for k in test_dataset.outvar_keys]
@@ -131,8 +130,6 @@ rmse_recursive = {key: [] for key in var_key_dict.values()}
 # Normalization stats
 mu = torch.tensor(test_dataset.mu[0]).to(device)  # shape [C, 1, 1]
 sd = torch.tensor(test_dataset.sd[0]).to(device)  # shape [C, 1, 1]
-print(mu.shape)
-print(sd.shape)
 
 # run inference
 with torch.no_grad():
