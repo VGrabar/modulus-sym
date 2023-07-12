@@ -88,6 +88,7 @@ test_dataset = ERA5HDF5GridDataset(
     chans=list(range(cfg.custom.n_channels)),
     tstep=cfg.custom.tstep,
     n_tsteps=1,  # set to one for inference
+    thresholds=cfg.custom.thresholds,
     patch_size=cfg.arch.afno.patch_size,
 )
 
@@ -97,7 +98,7 @@ m = Metrics(
     clim_mean_path="data/pdsi_Belarus_with_neighb_h5/stats/global_means.npy",
     device=device,
 )
-
+print(test_dataset.img_shape)
 # define input/output keys
 input_keys = [Key(k, size=test_dataset.nchans) for k in test_dataset.invar_keys]
 output_keys = [Key(k, size=test_dataset.nchans) for k in test_dataset.outvar_keys]
@@ -111,6 +112,7 @@ model = FourcastNetArch(
     embed_dim=cfg.arch.afno.embed_dim,
     depth=cfg.arch.afno.depth,
     num_blocks=cfg.arch.afno.num_blocks,
+    num_classes=len(cfg.custom.thresholds)+1,
 )
 
 # load parameters
@@ -129,6 +131,8 @@ rmse_recursive = {key: [] for key in var_key_dict.values()}
 # Normalization stats
 mu = torch.tensor(test_dataset.mu[0]).to(device)  # shape [C, 1, 1]
 sd = torch.tensor(test_dataset.sd[0]).to(device)  # shape [C, 1, 1]
+print(mu.shape)
+print(sd.shape)
 
 # run inference
 with torch.no_grad():
