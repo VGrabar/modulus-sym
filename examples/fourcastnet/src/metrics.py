@@ -42,6 +42,7 @@ class Metrics:
     ):
         self.img_shape = tuple(img_shape)
         self.device = device
+        self.num_classes = num_classes
 
         # Load climate mean value
         self.clim_mean = torch.as_tensor(np.load(clim_mean_path))
@@ -122,11 +123,14 @@ class Metrics:
 
         else:
             rocauc_table = torch.zeros(self.img_shape[0], self.img_shape[1])
-            rocauc = AUROC(task="binary", num_classes=1)
+            rocauc = AUROC(task="binary", num_classes=2)
+            print("table", rocauc_table.shape)
+            print("preds", all_preds.shape)
+            print("targets", all_targets.shape)
             rocauc_table = torch.tensor(
                 [
                     [
-                        rocauc(all_preds[:, x, y], all_targets[:, x, y])
+                        rocauc(all_preds[:, :, x, y], all_targets[:, x, y])
                         for x in range(self.img_shape[0])
                     ]
                     for y in range(self.img_shape[1])
@@ -142,15 +146,15 @@ class Metrics:
             roc = ROC(task="binary")
             for x in range(self.img_shape[0]):
                 for y in range(self.img_shape[1]):
-                    ap_table[x][y] = ap(all_preds[:, x, y], all_targets[:, x, y])
-                    fpr, tpr, thr = roc(all_preds[:, x, y], all_targets[:, x, y])
+                    ap_table[x][y] = ap(all_preds[:, :, x, y], all_targets[:, x, y])
+                    fpr, tpr, thr = roc(all_preds[:, :, x, y], all_targets[:, x, y])
                     j_stat = tpr - fpr
                     ind = torch.argmax(j_stat).item()
                     thresholds[x][y] = thr[ind]
                     f1 = F1Score(task="binary", threshold=thresholds[x][y]).to(
                         self.device
                     )
-                    f1_table = f1(all_preds[:, x, y], all_targets[:, x, y])
+                    f1_table = f1(all_preds[:, :, x, y], all_targets[:, x, y])
 
             ap_table = torch.nan_to_num(ap_table, nan=0.0)
             f1_table = torch.nan_to_num(f1_table, nan=0.0)

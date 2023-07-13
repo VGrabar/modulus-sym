@@ -46,6 +46,7 @@ logger = logging.getLogger(__name__)
 
 @modulus.sym.main(config_path="conf", config_name="config_FCN")
 def run(cfg: ModulusConfig) -> None:
+    
     # load training/ test data
     channels = list(range(cfg.custom.n_channels))
     train_dataset = _create_dataset(
@@ -122,7 +123,6 @@ def run(cfg: ModulusConfig) -> None:
 
     # make solver
     slv = Solver(cfg, domain)
-
     # start solver
     slv.solve()
 

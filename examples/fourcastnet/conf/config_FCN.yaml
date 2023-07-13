@@ -52,8 +52,8 @@ custom:
   tag:
 
 batch_size:
-  grid: 2
-  validation: 2
+  grid: 4
+  validation: 4
 
 training:
   amp: true
@@ -62,4 +62,4 @@ training:
   save_network_freq: 5000
   print_stats_freq: 1000
   summary_freq: 5000
-  max_steps : 50000 # 80 epochs * (55k samples / 64 batch size)
+  max_steps : 30000 # 80 epochs * (55k samples / 64 batch size)

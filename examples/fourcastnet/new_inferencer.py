@@ -78,7 +78,7 @@ class SubsetSequentialBatchSampler(Sampler):
 # load configuration
 cfg = omegaconf.OmegaConf.load("conf/config_FCN.yaml")
 chkpt_path = cfg.custom.chkpt_path
-file_path = chkpt_path.split(".")[0] + "_test_metrics.txt"
+results_path = chkpt_path.split(".")[0] + "_test_metrics.txt"
 model_path = to_absolute_path(chkpt_path)
 
 # get device
@@ -122,19 +122,6 @@ model.load_state_dict(torch.load(model_path))
 model.to(device)
 logging.info(f"Loaded model {model_path}")
 
-# define subsets of dataset to run inference
-nics = 180  # Number of 2 day correl time samples
-nsteps = 25
-last = len(test_dataset) - 1 - nsteps * cfg.custom.tstep
-
-# Variable dictionary
-acc_recursive = {key: [] for key in var_key_dict.values()}
-rmse_recursive = {key: [] for key in var_key_dict.values()}
-# Normalization stats
-mu = torch.tensor(test_dataset.mu[0]).to(device)  # shape [C, 1, 1]
-sd = torch.tensor(test_dataset.sd[0]).to(device)  # shape [C, 1, 1]
-
-
 dataloader = DataLoader(
     dataset=test_dataset,
     # batch_sampler=SubsetSequentialBatchSampler(subset),
@@ -142,17 +129,42 @@ dataloader = DataLoader(
     num_workers=1,
     worker_init_fn=test_dataset.worker_init_fn,
 )
-
 # run inference
 with torch.no_grad():
     for tstep, (invar, true_outvar, _) in enumerate(dataloader):
         invar = to_device(invar)
         true_outvar = to_device(true_outvar)
         pred_outvar_single = model(invar)
+        if tstep == 0:
+            all_targets = true_outvar[str(output_keys[0])]
+            all_preds = pred_outvar_single[str(output_keys[0])]
+        else:
+            all_targets = torch.cat((all_targets, true_outvar[str(output_keys[0])]), 0)
+            all_preds = torch.cat((all_preds, pred_outvar_single[str(output_keys[0])]), 0)
 
+# remove dim=1, which is equal to C=1 of prediction
+all_targets = torch.squeeze(all_targets, dim=1)
+print(all_targets.shape)
+# normalizing probs of output
+all_preds = torch.softmax(all_preds, dim=1)
+print(all_preds.shape)
+rocauc_table, ap_table, f1_table, thresholds = m.metrics_celled(all_targets, all_preds)
 
-# rocauc_table, ap_table, f1_table, thresholds = m.metrics_celled(all_targets, all_preds)
+# logging results
 
+res_file = open(res_path, "w")
+res_file.write(f"test_data_path: {cfg.custom.test_dataset.data_path}")
+res_file.write(f"chkpt_path: {cfg.custom.chkpt_path}")
+res_file.write(f"test_data_path: {cfg.custom.test_dataset.data_path}")
+res_file.write(f"forward: {cfg.custom.tstep}")
+
+logging.info(f"test/rocauc_median: {torch.median(rocauc_table)}")
+res_file.write(f"test/rocauc_median: {torch.median(rocauc_table)}")
+logging.info(f"test/ap_median: {torch.median(ap_table)}")
+res_file.write(f"test/ap_median: {torch.median(ap_table)}")
+logging.info(f"test/f1_median: {torch.median(f1_table)}")
+res_file.write(f"test/f1_median: {torch.median(f1_table)}")
+res_file.close()
 
 # # run inference
 # with torch.no_grad():
