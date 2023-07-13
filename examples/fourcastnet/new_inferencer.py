@@ -78,7 +78,7 @@ class SubsetSequentialBatchSampler(Sampler):
 # load configuration
 cfg = omegaconf.OmegaConf.load("conf/config_FCN.yaml")
 chkpt_path = cfg.custom.chkpt_path
-results_path = chkpt_path.split(".")[0] + "_test_metrics.txt"
+res_path = chkpt_path.split(".")[0] + "_test_metrics.txt"
 model_path = to_absolute_path(chkpt_path)
 
 # get device
@@ -143,27 +143,28 @@ with torch.no_grad():
             all_preds = torch.cat((all_preds, pred_outvar_single[str(output_keys[0])]), 0)
 
 # remove dim=1, which is equal to C=1 of prediction
-all_targets = torch.squeeze(all_targets, dim=1)
+all_targets = torch.squeeze(all_targets, dim=1).int()
 print(all_targets.shape)
 # normalizing probs of output
 all_preds = torch.softmax(all_preds, dim=1)
+all_preds = all_preds[:, 1, :, :]
 print(all_preds.shape)
 rocauc_table, ap_table, f1_table, thresholds = m.metrics_celled(all_targets, all_preds)
 
 # logging results
 
 res_file = open(res_path, "w")
-res_file.write(f"test_data_path: {cfg.custom.test_dataset.data_path}")
-res_file.write(f"chkpt_path: {cfg.custom.chkpt_path}")
-res_file.write(f"test_data_path: {cfg.custom.test_dataset.data_path}")
-res_file.write(f"forward: {cfg.custom.tstep}")
+res_file.write(f"test_data_path: {cfg.custom.test_dataset.data_path} \n")
+res_file.write(f"chkpt_path: {cfg.custom.chkpt_path} \n")
+res_file.write(f"test_data_path: {cfg.custom.test_dataset.data_path} \n")
+res_file.write(f"forward: {cfg.custom.tstep} \n")
 
 logging.info(f"test/rocauc_median: {torch.median(rocauc_table)}")
-res_file.write(f"test/rocauc_median: {torch.median(rocauc_table)}")
+res_file.write(f"test/rocauc_median: {torch.median(rocauc_table)} \n")
 logging.info(f"test/ap_median: {torch.median(ap_table)}")
-res_file.write(f"test/ap_median: {torch.median(ap_table)}")
+res_file.write(f"test/ap_median: {torch.median(ap_table)} \n")
 logging.info(f"test/f1_median: {torch.median(f1_table)}")
-res_file.write(f"test/f1_median: {torch.median(f1_table)}")
+res_file.write(f"test/f1_median: {torch.median(f1_table)} \n")
 res_file.close()
 
 # # run inference

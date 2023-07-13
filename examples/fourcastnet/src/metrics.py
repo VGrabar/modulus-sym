@@ -123,14 +123,11 @@ class Metrics:
 
         else:
             rocauc_table = torch.zeros(self.img_shape[0], self.img_shape[1])
-            rocauc = AUROC(task="binary", num_classes=2)
-            print("table", rocauc_table.shape)
-            print("preds", all_preds.shape)
-            print("targets", all_targets.shape)
+            rocauc = AUROC(task="binary")
             rocauc_table = torch.tensor(
                 [
                     [
-                        rocauc(all_preds[:, :, x, y], all_targets[:, x, y])
+                        rocauc(all_preds[:, x, y], all_targets[:, x, y])
                         for x in range(self.img_shape[0])
                     ]
                     for y in range(self.img_shape[1])
@@ -146,15 +143,19 @@ class Metrics:
             roc = ROC(task="binary")
             for x in range(self.img_shape[0]):
                 for y in range(self.img_shape[1]):
-                    ap_table[x][y] = ap(all_preds[:, :, x, y], all_targets[:, x, y])
-                    fpr, tpr, thr = roc(all_preds[:, :, x, y], all_targets[:, x, y])
+                    ap_table[x][y] = ap(all_preds[:, x, y], all_targets[:, x, y])
+                    print(ap_table[x][y])
+                    fpr, tpr, thr = roc(all_preds[:, x, y], all_targets[:, x, y])
                     j_stat = tpr - fpr
                     ind = torch.argmax(j_stat).item()
-                    thresholds[x][y] = thr[ind]
-                    f1 = F1Score(task="binary", threshold=thresholds[x][y]).to(
-                        self.device
-                    )
-                    f1_table = f1(all_preds[:, :, x, y], all_targets[:, x, y])
+                    thresholds[x][y] = thr[ind].item()
+                    thresholds[x][y] = float(0.5)
+                    #if thresholds[x][y] == 1.0:
+                    #    thresholds[x][y] = 0.999
+                    #f1 = F1Score(task="binary", threshold=thresholds[x][y]).to(
+                    #    self.device
+                    #)
+                    #f1_table = f1(all_preds[:, x, y], all_targets[:, x, y])
 
             ap_table = torch.nan_to_num(ap_table, nan=0.0)
             f1_table = torch.nan_to_num(f1_table, nan=0.0)

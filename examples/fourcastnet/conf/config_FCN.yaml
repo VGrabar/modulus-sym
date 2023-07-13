@@ -48,7 +48,7 @@ custom:
   num_workers:
     grid: 8
     validation: 8
-  chkpt_path: "outputs/fcn_era5/FCN0.pth"
+  chkpt_path: "outputs/fcn_era5/pdsi_Belarus_with_neighb_h5_forward_2.pth"
   tag:
 
 batch_size:
