@@ -92,7 +92,10 @@ def run(cfg: ModulusConfig) -> None:
         num_blocks=cfg.arch.afno.num_blocks,
         num_classes=len(cfg.custom.thresholds)+1,
     )
-    nodes = [model.make_node(name="FCN")]
+
+    model_name = cfg.custom.test_dataset.data_path.split("/")[1] + "_forward_" + str(cfg.custom.tstep)
+    #nodes = [model.make_node(name="FCN")]
+    nodes = [model.make_node(name=model_name)]
 
     # make domain
     domain = Domain()
