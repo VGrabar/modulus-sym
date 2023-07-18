@@ -34,21 +34,23 @@ optimizer:
 scheduler:
   T_max: 80000
 
+
 custom:
+  region: "Missouri"
   n_channels: 1 # 20
   tstep: 6 #1
   n_tsteps: 1
   thresholds: [-2]
   train_dataset:
     kind: "default"
-    data_path: "data/pdsi_Belarus_with_neighb_h5/train" # Training dataset path here
+    data_path: "data/pdsi_${custom.region}_h5/train" # Training dataset path here
   test_dataset:
     kind: "default"
-    data_path: "data/pdsi_Belarus_with_neighb_h5/test" # Test dataset path here
+    data_path: "data/pdsi_${custom.region}_h5/test" # Test dataset path here
   num_workers:
     grid: 8
     validation: 8
-  chkpt_path: "outputs/fcn_era5/pdsi_Belarus_with_neighb_h5_forward_2.pth"
+  chkpt_path: "outputs/fcn_era5/pdsi_{custom.region}_h5_forward_2.pth"
   tag:
 
 batch_size:

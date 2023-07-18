@@ -144,7 +144,6 @@ class Metrics:
             for x in range(self.img_shape[0]):
                 for y in range(self.img_shape[1]):
                     ap_table[x][y] = ap(all_preds[:, x, y], all_targets[:, x, y])
-                    print(ap_table[x][y])
                     fpr, tpr, thr = roc(all_preds[:, x, y], all_targets[:, x, y])
                     j_stat = tpr - fpr
                     ind = torch.argmax(j_stat).item()
