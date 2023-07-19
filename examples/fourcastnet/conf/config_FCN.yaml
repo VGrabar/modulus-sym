@@ -50,7 +50,7 @@ custom:
   num_workers:
     grid: 8
     validation: 8
-  chkpt_path: "outputs/fcn_era5/pdsi_{custom.region}_h5_forward_2.pth"
+  chkpt_path: "outputs/fcn_era5/pdsi_{custom.region}_h5_forward_{custom.tstep}.pth"
   tag:
 
 batch_size:
@@ -64,4 +64,4 @@ training:
   save_network_freq: 5000
   print_stats_freq: 1000
   summary_freq: 5000
-  max_steps : 30000 # 80 epochs * (55k samples / 64 batch size)
+  max_steps : 50000 # 80 epochs * (55k samples / 64 batch size)
