@@ -114,6 +114,7 @@ class FourcastNetArch(Arch):
         for t in range(self.n_tsteps):
             x = self._impl(x)
             x = self.conv(x)
+            x = torch.sigmoid(x)
             ys.append(x)
         y = torch.cat(ys, dim=1)
 
