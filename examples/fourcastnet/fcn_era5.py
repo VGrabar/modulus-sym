@@ -26,27 +26,25 @@ import logging
 
 import modulus
 import modulus.sym
-
-from modulus.sym.hydra.config import ModulusConfig
-from modulus.sym.key import Key
 from modulus.sym.domain import Domain
 from modulus.sym.domain.constraint import Constraint, SupervisedGridConstraint
 from modulus.sym.domain.constraint.constraint import InfiniteDataLoader
 from modulus.sym.domain.validator import GridValidator
+from modulus.sym.hydra.config import ModulusConfig
+from modulus.sym.key import Key
 from modulus.sym.solver import Solver
 from modulus.sym.utils.io import GridValidatorPlotter
 
 from src.dali_dataset import ERA5HDF5GridDaliIterableDataset
 from src.dataset import ERA5HDF5GridDataset
 from src.fourcastnet import FourcastNetArch
-from src.loss import LpLoss, CELoss
+from src.loss import CELoss, LpLoss
 
 logger = logging.getLogger(__name__)
 
 
 @modulus.sym.main(config_path="conf", config_name="config_FCN")
 def run(cfg: ModulusConfig) -> None:
-    
     # load training/ test data
     channels = list(range(cfg.custom.n_channels))
     train_dataset = _create_dataset(
@@ -91,11 +89,15 @@ def run(cfg: ModulusConfig) -> None:
         embed_dim=cfg.arch.afno.embed_dim,
         depth=cfg.arch.afno.depth,
         num_blocks=cfg.arch.afno.num_blocks,
-        num_classes=len(cfg.custom.thresholds)+1,
+        num_classes=len(cfg.custom.thresholds) + 1,
     )
 
-    model_name = cfg.custom.test_dataset.data_path.split("/")[1] + "_forward_" + str(cfg.custom.tstep)
-    #nodes = [model.make_node(name="FCN")]
+    model_name = (
+        cfg.custom.test_dataset.data_path.split("/")[1]
+        + "_forward_"
+        + str(cfg.custom.tstep)
+    )
+    # nodes = [model.make_node(name="FCN")]
     nodes = [model.make_node(name=model_name)]
 
     # make domain

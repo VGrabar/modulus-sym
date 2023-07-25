@@ -77,7 +77,7 @@ class SubsetSequentialBatchSampler(Sampler):
 
 # load configuration
 cfg = omegaconf.OmegaConf.load("conf/config_FCN.yaml")
-model_path = to_absolute_path("outputs/fcn_era5/FCN.0.pth")
+model_path = to_absolute_path(cfg.custom.chkpt_path)
 
 # get device
 device = DistributedManager().device

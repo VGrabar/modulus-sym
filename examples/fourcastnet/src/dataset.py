@@ -166,7 +166,7 @@ class ERA5HDF5GridDataset(ERA5HDF5GridBaseDataset, Dataset):
 
         # get data
         xs = []
-        for idx in [in_idx] + out_idxs:
+        for idx in [in_idx]:
             # get array
             # has shape [C, H, W]
             x = self.data_files[year_idx]["fields"][idx, self.chans]
@@ -181,14 +181,27 @@ class ERA5HDF5GridDataset(ERA5HDF5GridBaseDataset, Dataset):
 
             xs.append(x)
 
+        for idx in out_idxs:
+            # get array
+            # has shape [C, H, W]
+            x = self.data_files[year_idx]["fields"][idx, self.chans]
+            assert x.ndim == 3, f"Expected 3 dimensions, but got {x.shape}"
+
+            # no normalisation for output
+            #x = (x - self.mu[0]) / self.sd[0]
+
+            # crop data if needed
+            if self.patch_size is not None:
+                x = x[..., : self.img_shape[0], : self.img_shape[1]]
+
+            xs.append(x)
+        
         # convert to tensor dicts
         assert len(self.invar_keys) == 1
         invar = {self.invar_keys[0]: xs[0]}
 
         assert len(self.outvar_keys) == len(xs) - 1
-        #outvar = {self.outvar_keys[i]: len(self.thresholds) - torch.bucketize(x, self.thresholds) for i, x in enumerate(xs[1:])}
         outvar = {self.outvar_keys[i]: len(self.thresholds) - np.digitize(x, self.thresholds) for i, x in enumerate(xs[1:])}
-
         invar = Dataset._to_tensor_dict(invar)
         outvar = Dataset._to_tensor_dict(outvar)
 

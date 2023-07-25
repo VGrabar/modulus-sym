@@ -25,8 +25,8 @@ arch:
   afno:
     patch_size: 8
     embed_dim: 768
-    depth: 12
-    num_blocks: 8
+    depth: 4 #12
+    num_blocks: 4 #8
 
 optimizer:
   lr: 0.0005
@@ -38,19 +38,19 @@ scheduler:
 custom:
   region: "Missouri"
   n_channels: 1 # 20
-  tstep: 6 #1
+  tstep: 5 #1
   n_tsteps: 1
   thresholds: [-2]
   train_dataset:
     kind: "default"
-    data_path: "data/pdsi_${custom.region}_h5/train" # Training dataset path here
+    data_path: "data/pdsi_Missouri_h5/train" # Training dataset path here
   test_dataset:
     kind: "default"
-    data_path: "data/pdsi_${custom.region}_h5/test" # Test dataset path here
+    data_path: "data/pdsi_Missouri_h5/test" # Test dataset path here
   num_workers:
     grid: 8
     validation: 8
-  chkpt_path: "outputs/fcn_era5/pdsi_{custom.region}_h5_forward_{custom.tstep}.pth"
+  chkpt_path: "outputs/fcn_era5/pdsi_Missouri_h5_forward_${custom.tstep}.0.pth"
   tag:
 
 batch_size:
@@ -64,4 +64,4 @@ training:
   save_network_freq: 5000
   print_stats_freq: 1000
   summary_freq: 5000
-  max_steps : 35000 # 80 epochs * (55k samples / 64 batch size)
+  max_steps : 20000 # 80 epochs * (55k samples / 64 batch size)
