@@ -121,7 +121,7 @@ class ERA5HDF5GridBaseDataset:
         logging.info(f"Number of samples/year: {self.n_samples_per_year}")
 
         # get total length
-        self.length = self.n_years * self.n_samples_per_year
+        self.length = self.n_years * self.n_samples_per_year - self.tstep
 
         # adjust image shape if patch_size defined
         if self.patch_size is not None:
@@ -152,6 +152,7 @@ class ERA5HDF5GridDataset(ERA5HDF5GridBaseDataset, Dataset):
     def __getitem__(self, idx):
         # get local indices from global index
         year_idx = int(idx / self.n_samples_per_year)
+        out_year_idx = year_idx
         local_idx = int(idx % self.n_samples_per_year)
         in_idx = self.samples[year_idx][local_idx]
 
@@ -160,8 +161,11 @@ class ERA5HDF5GridDataset(ERA5HDF5GridBaseDataset, Dataset):
         for i in range(self.n_tsteps):
             out_idx = in_idx + (i + 1) * self.tstep
             # if at end of dataset, just learn identity instead
+            # if out_idx > (self.n_samples_per_year_all - 1):
+            #     out_idx = in_idx
             if out_idx > (self.n_samples_per_year_all - 1):
-                out_idx = in_idx
+                out_idx = out_idx % self.n_samples_per_year_all
+                out_year_idx += 1
             out_idxs.append(out_idx)
 
         # get data
@@ -184,7 +188,7 @@ class ERA5HDF5GridDataset(ERA5HDF5GridBaseDataset, Dataset):
         for idx in out_idxs:
             # get array
             # has shape [C, H, W]
-            x = self.data_files[year_idx]["fields"][idx, self.chans]
+            x = self.data_files[out_year_idx]["fields"][idx, self.chans]
             assert x.ndim == 3, f"Expected 3 dimensions, but got {x.shape}"
 
             # no normalisation for output
