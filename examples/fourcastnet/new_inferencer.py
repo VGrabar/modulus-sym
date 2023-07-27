@@ -68,6 +68,8 @@ def run(cfg: ModulusConfig) -> None:
     input_keys = [Key(k, size=test_dataset.nchans) for k in test_dataset.invar_keys]
     output_keys = [Key(k, size=test_dataset.nchans) for k in test_dataset.outvar_keys]
 
+
+
     # create model
     model = FourcastNetArch(
         input_keys=input_keys,

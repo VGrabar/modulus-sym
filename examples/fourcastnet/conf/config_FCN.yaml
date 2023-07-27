@@ -29,28 +29,28 @@ arch:
     num_blocks: 4 #8
 
 optimizer:
-  lr: 0.0005
+  lr: 0.0005 #0.0005
 
 scheduler:
   T_max: 80000
 
 
 custom:
-  region: "Missouri"
+  region: "CentralKZ"
   n_channels: 1 # 20
-  tstep: 5 #1
+  tstep: 1 #1
   n_tsteps: 1
   thresholds: [-2]
   train_dataset:
     kind: "default"
-    data_path: "data/pdsi_Missouri_h5/train" # Training dataset path here
+    data_path: "data/pdsi_${custom.region}_h5/train" # Training dataset path here
   test_dataset:
     kind: "default"
-    data_path: "data/pdsi_Missouri_h5/test" # Test dataset path here
+    data_path: "data/pdsi_${custom.region}_h5/test" # Test dataset path here
   num_workers:
     grid: 8
     validation: 8
-  chkpt_path: "outputs/fcn_era5/pdsi_Missouri_h5_forward_${custom.tstep}.0.pth"
+  chkpt_path: "outputs/fcn_era5/${custom.region}/pdsi_${custom.region}_h5_forward_${custom.tstep}.0.pth"
   tag:
 
 batch_size:
