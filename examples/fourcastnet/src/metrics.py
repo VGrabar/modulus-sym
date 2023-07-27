@@ -15,8 +15,8 @@
 import torch
 import numpy as np
 from typing import Tuple
-from torchmetrics.classification import AUROC, AveragePrecision, F1Score, ROC, Accuracy
-
+from torchmetrics.classification import AUROC, AveragePrecision, BinaryF1Score, ROC, Accuracy
+from torcheval.metrics.functional import binary_f1_score
 
 class Metrics:
     """Class used for computing performance related metrics. Expects predictions /
@@ -133,13 +133,12 @@ class Metrics:
                     j_stat = tpr - fpr
                     ind = torch.argmax(j_stat).item()
                     thresholds[x][y] = thr[ind].item()
-                    thresholds[x][y] = float(0.5)
-                    #if thresholds[x][y] == 1.0:
-                    #    thresholds[x][y] = 0.999
-                    #f1 = F1Score(task="binary", threshold=thresholds[x][y]).to(
+                    #print(thresholds[x][y])
+                    #f1 = BinaryF1Score(threshold=thresholds[x][y]).to(
                     #    self.device
                     #)
-                    #f1_table = f1(all_preds[:, x, y], all_targets[:, x, y])
+                    #f1_table[x][y] = f1(all_preds[:, x, y], all_targets[:, x, y])
+                    f1_table[x][y] = binary_f1_score(all_preds[:, x, y], all_targets[:, x, y], threshold=thresholds[x][y])
 
             ap_table = torch.nan_to_num(ap_table, nan=0.0)
             f1_table = torch.nan_to_num(f1_table, nan=0.0)
