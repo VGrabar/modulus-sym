@@ -24,12 +24,12 @@ defaults :
 arch:
   afno:
     patch_size: 8
-    embed_dim: 768
+    embed_dim: 1024
     depth: 4 #12
-    num_blocks: 4 #8
+    num_blocks: 128 #8
 
 optimizer:
-  lr: 0.0005 #0.0005
+  lr: 0.0001 #0.0005
 
 scheduler:
   T_max: 80000
@@ -38,7 +38,7 @@ scheduler:
 custom:
   region: "CentralKZ"
   n_channels: 1 # 20
-  tstep: 1 #1
+  tstep: 6
   n_tsteps: 1
   thresholds: [-2]
   train_dataset:
@@ -54,8 +54,8 @@ custom:
   tag:
 
 batch_size:
-  grid: 4
-  validation: 4
+  grid: 8
+  validation: 8
 
 training:
   amp: true
@@ -64,4 +64,4 @@ training:
   save_network_freq: 5000
   print_stats_freq: 1000
   summary_freq: 5000
-  max_steps : 20000 # 80 epochs * (55k samples / 64 batch size)
+  max_steps : 50000 # 80 epochs * (55k samples / 64 batch size)
