@@ -81,6 +81,8 @@ def run(cfg: ModulusConfig) -> None:
         num_blocks=cfg.arch.afno.num_blocks,
         num_classes=len(cfg.custom.thresholds) + 1,
     )
+    
+    n_class = len(cfg.custom.thresholds) + 1
 
     # load parameters
     model.load_state_dict(torch.load(model_path))
@@ -120,11 +122,17 @@ def run(cfg: ModulusConfig) -> None:
     )
     # normalizing probs of output
     all_preds = torch.softmax(all_preds, dim=1)
-    all_preds = all_preds[:, 1, :, :]
-    print(all_preds.shape)
-    rocauc_table, ap_table, f1_table, thresholds = m.metrics_celled(
-        all_targets, all_preds
-    )
+    if n_class == 2:
+        all_preds = all_preds[:, 1, :, :]
+        print(all_preds.shape)
+        rocauc_table, ap_table, f1_table, thresholds = m.metrics_celled(
+            all_targets, all_preds
+        )
+    else:
+        print(all_preds.shape)
+        acc_table, rocauc_table_macro, rocauc_table_weighted, thresholds = m.metrics_celled(
+            all_targets, all_preds
+        )
 
     # logging results
 
@@ -133,13 +141,23 @@ def run(cfg: ModulusConfig) -> None:
     res_file.write(f"chkpt_path: {cfg.custom.chkpt_path} \n")
     res_file.write(f"test_data_path: {cfg.custom.test_dataset.data_path} \n")
     res_file.write(f"forward: {cfg.custom.tstep} \n")
+    res_file.write(f"num_classes: {n_class} \n")
+    
+    if n_class == 2:
+        logging.info(f"test/rocauc_median: {torch.median(rocauc_table)}")
+        res_file.write(f"test/rocauc_median: {torch.median(rocauc_table)} \n")
+        logging.info(f"test/ap_median: {torch.median(ap_table)}")
+        res_file.write(f"test/ap_median: {torch.median(ap_table)} \n")
+        logging.info(f"test/f1_median: {torch.median(f1_table)}")
+        res_file.write(f"test/f1_median: {torch.median(f1_table)} \n")
+    else:
+        logging.info(f"test/acc_median: {torch.median(acc_table)}")
+        res_file.write(f"test/acc_median: {torch.median(acc_table)} \n")
+        logging.info(f"test/rocauc_macro_median: {torch.median(rocauc_table_macro)}")
+        res_file.write(f"test/rocauc_macro_median: {torch.median(rocauc_table_macro)} \n")
+        logging.info(f"test/rocauc_weighted_median: {torch.median(rocauc_table_weighted)}")
+        res_file.write(f"test/rocauc_weighted_median: {torch.median(rocauc_table_weighted)} \n")
 
-    logging.info(f"test/rocauc_median: {torch.median(rocauc_table)}")
-    res_file.write(f"test/rocauc_median: {torch.median(rocauc_table)} \n")
-    logging.info(f"test/ap_median: {torch.median(ap_table)}")
-    res_file.write(f"test/ap_median: {torch.median(ap_table)} \n")
-    logging.info(f"test/f1_median: {torch.median(f1_table)}")
-    res_file.write(f"test/f1_median: {torch.median(f1_table)} \n")
     res_file.close()
 
 

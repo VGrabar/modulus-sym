@@ -36,11 +36,11 @@ scheduler:
 
 
 custom:
-  region: "CentralKZ"
+  region: "Belarus"
   n_channels: 1 # 20
   tstep: 6
   n_tsteps: 1
-  thresholds: [-2]
+  thresholds: [-2, 2]
   train_dataset:
     kind: "default"
     data_path: "data/pdsi_${custom.region}_h5/train" # Training dataset path here
@@ -50,7 +50,7 @@ custom:
   num_workers:
     grid: 8
     validation: 8
-  chkpt_path: "outputs/fcn_era5/${custom.region}/pdsi_${custom.region}_h5_forward_${custom.tstep}.0.pth"
+  chkpt_path: "outputs/fcn_era5/${custom.region}_3/pdsi_${custom.region}_h5_forward_${custom.tstep}.0.pth"
   tag:
 
 batch_size:

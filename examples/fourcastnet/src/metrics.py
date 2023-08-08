@@ -75,11 +75,11 @@ class Metrics:
                 num_classes=self.num_classes,
                 average="macro",
                 thresholds=20,
-            )
+            ).to(self.device)
             rocauc_table_macro = torch.tensor(
                 [
                     [
-                        rocauc(all_preds[:, :, x, y], all_targets[:, x, y])
+                        rocauc(all_preds[:, :, x, y], all_targets[:, x, y].long())
                         for x in range(self.img_shape[0])
                     ]
                     for y in range(self.img_shape[1])
@@ -90,11 +90,11 @@ class Metrics:
                 num_classes=self.num_classes,
                 average="weighted",
                 thresholds=20,
-            )
+            ).to(self.device)
             rocauc_table_weighted = torch.tensor(
                 [
                     [
-                        rocauc(all_preds[:, :, x, y], all_targets[:, x, y])
+                        rocauc(all_preds[:, :, x, y], all_targets[:, x, y].long())
                         for x in range(self.img_shape[0])
                     ]
                     for y in range(self.img_shape[1])
