@@ -16,6 +16,7 @@ import h5py
 import logging
 import numpy as np
 import torch
+import sys
 
 from typing import List
 from pathlib import Path
@@ -119,10 +120,11 @@ class ERA5HDF5GridBaseDataset:
                 for _ in range(self.n_years)
             ]
         logging.info(f"Number of samples/year: {self.n_samples_per_year}")
+        logging.info(f"Number of samples/year all: {self.n_samples_per_year_all}")
 
         # get total length
         self.length = self.n_years * self.n_samples_per_year - self.tstep
-
+        logging.info(f"total length: {self.length}") 
         # adjust image shape if patch_size defined
         if self.patch_size is not None:
             self.img_shape = [s - s % self.patch_size for s in self.img_shape]
@@ -151,11 +153,11 @@ class ERA5HDF5GridDataset(ERA5HDF5GridBaseDataset, Dataset):
 
     def __getitem__(self, idx):
         # get local indices from global index
-        year_idx = int(idx / self.n_samples_per_year)
+        idx_before = idx
+        year_idx = int(idx // self.n_samples_per_year)
         out_year_idx = year_idx
         local_idx = int(idx % self.n_samples_per_year)
         in_idx = self.samples[year_idx][local_idx]
-
         # get output indices
         out_idxs = []
         for i in range(self.n_tsteps):
@@ -163,11 +165,12 @@ class ERA5HDF5GridDataset(ERA5HDF5GridBaseDataset, Dataset):
             # if at end of dataset, just learn identity instead
             # if out_idx > (self.n_samples_per_year_all - 1):
             #     out_idx = in_idx
-            if out_idx > (self.n_samples_per_year_all - 1):
+            if out_idx > (self.n_samples_per_year_all - 1) and out_year_idx < self.n_years-1:
                 out_idx = out_idx % self.n_samples_per_year_all
                 out_year_idx += 1
+            elif out_idx > (self.n_samples_per_year_all - 1) and out_year_idx >= self.n_years-1:
+                out_idx = in_idx
             out_idxs.append(out_idx)
-
         # get data
         xs = []
         for idx in [in_idx]:
@@ -184,11 +187,22 @@ class ERA5HDF5GridDataset(ERA5HDF5GridBaseDataset, Dataset):
                 x = x[..., : self.img_shape[0], : self.img_shape[1]]
 
             xs.append(x)
-
         for idx in out_idxs:
             # get array
             # has shape [C, H, W]
-            x = self.data_files[out_year_idx]["fields"][idx, self.chans]
+            try:
+                x = self.data_files[out_year_idx]["fields"][idx, self.chans]
+            except:
+                print(in_idx)
+                print(len(self.data_files))
+                print("idx before", idx_before)
+                print("out year idx", out_year_idx)
+                print(out_idxs)
+                print(self.data_files[out_year_idx]["fields"].shape)
+                print()
+                sys.exit(1)
+
+
             assert x.ndim == 3, f"Expected 3 dimensions, but got {x.shape}"
 
             # no normalisation for output

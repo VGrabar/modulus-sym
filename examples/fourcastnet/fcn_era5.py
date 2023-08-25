@@ -55,6 +55,7 @@ def run(cfg: ModulusConfig) -> None:
         n_tsteps=cfg.custom.n_tsteps,
         thresholds=cfg.custom.thresholds,
         patch_size=cfg.arch.afno.patch_size,
+        n_samples_per_year=cfg.custom.n_samples_per_year,
         batch_size=cfg.batch_size.grid,
         num_workers=cfg.custom.num_workers.grid,
         shuffle=True,
